@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EventPulse - Mobile Event Companion</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Font Awesome Icons & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- QRCodeJS Library for client-side QR generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        @media (min-width: 640px) {
+            .mobile-frame {
+                max-width: 412px;
+                height: 840px;
+                border-radius: 40px;
+                box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 12px #1f2937;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4">
+
+    <div class="mobile-frame w-full h-screen bg-slate-50 dark:bg-slate-950 flex flex-col overflow-hidden relative sm:border sm:border-slate-800">
+        
+        <!-- App Header Bar -->
+        <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md sticky top-0 z-30 border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white font-bold text-sm shadow-md shadow-indigo-500/30">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-slate-900 dark:text-white text-base leading-none">TechSummit '26</h1>
+                    <span class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Nov 12-14 • Grand Palace Hotel</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-1.5">
+                <!-- Share App Button -->
+                <button onclick="openShareModal()" class="px-2.5 py-1.5 rounded-full bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400 text-xs font-bold flex items-center gap-1.5 hover:bg-brand-100 transition">
+                    <i class="fa-solid fa-share-nodes"></i>
+                    <span>Share</span>
+                </button>
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition">
+                    <i id="themeIcon" class="fa-solid fa-moon text-xs"></i>
+                </button>
+            </div>
+        </header>
+
+        <main id="mainContent" class="flex-1 overflow-y-auto hide-scrollbar pb-20 p-4">
+            
+            <!-- TAB 1: OVERVIEW / DASHBOARD -->
+            <section id="tab-dashboard" class="tab-content space-y-4">
+                <!-- Event Header Banner -->
+                <div class="relative rounded-2xl overflow-hidden bg-gradient-to-br from-brand-600 via-indigo-600 to-purple-700 text-white p-5 shadow-lg shadow-indigo-500/20">
+                    <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+                    <span class="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold tracking-wide uppercase mb-2">Annual Global Tech Conference</span>
+                    <h2 class="text-2xl font-extrabold tracking-tight">TechSummit 2026</h2>
+                    <p class="text-xs text-indigo-100 mt-1 flex items-center gap-1.5">
+                        <i class="fa-solid fa-location-dot"></i> Grand Palace Hotel & Convention Center
+                    </p>
+                    
+                    <!-- Countdown Banner -->
+                    <div class="mt-4 pt-3 border-t border-white/20 grid grid-cols-4 gap-2 text-center">
+                        <div class="bg-white/10 backdrop-blur-md rounded-lg p-1.5">
+                            <span id="cd-days" class="block font-bold text-lg leading-none">12</span>
+                            <span class="text-[10px] opacity-80 uppercase">Days</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-lg p-1.5">
+                            <span id="cd-hours" class="block font-bold text-lg leading-none">08</span>
+                            <span class="text-[10px] opacity-80 uppercase">Hours</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-lg p-1.5">
+                            <span id="cd-mins" class="block font-bold text-lg leading-none">42</span>
+                            <span class="text-[10px] opacity-80 uppercase">Mins</span>
+                        </div>
+                        <div class="bg-white/10 backdrop-blur-md rounded-lg p-1.5">
+                            <span id="cd-secs" class="block font-bold text-lg leading-none">19</span>
+                            <span class="text-[10px] uppercase opacity-80">Secs</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Share Promotion Card -->
+                <div class="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 border border-indigo-200/50 dark:border-indigo-800/50 rounded-2xl p-3.5 flex items-center justify-between">
+                    <div class="space-y-0.5">
+                        <h4 class="font-bold text-xs text-slate-900 dark:text-white">Share App with Guests</h4>
+                        <p class="text-[11px] text-slate-500 dark:text-slate-400">Provide schedule & map directly to colleagues</p>
+                    </div>
+                    <button onclick="openShareModal()" class="px-3 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-semibold shadow-sm hover:bg-brand-700 transition flex items-center gap-1">
+                        <i class="fa-solid fa-qrcode text-xs"></i>
+                        <span>Get QR</span>
+                    </button>
+                </div>
+
+                <!-- Quick Navigation Shortcuts -->
+                <div class="grid grid-cols-4 gap-2">
+                    <button onclick="switchTab('agenda')" class="flex flex-col items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-brand-500 transition">
+                        <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-950/50 text-brand-600 dark:text-brand-500 flex items-center justify-center mb-1 text-lg">
+                            <i class="fa-solid fa-calendar-days"></i>
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Agenda</span>
+                    </button>
+                    <button onclick="switchTab('venue')" class="flex flex-col items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-brand-500 transition">
+                        <div class="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-1 text-lg">
+                            <i class="fa-solid fa-map-location-dot"></i>
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Venue</span>
+                    </button>
+                    <button onclick="switchTab('hotel')" class="flex flex-col items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-brand-500 transition">
+                        <div class="w-10 h-10 rounded-full bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center mb-1 text-lg">
+                            <i class="fa-solid fa-hotel"></i>
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Hotel</span>
+                    </button>
+                    <button onclick="switchTab('myschedule')" class="flex flex-col items-center p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm hover:border-brand-500 transition">
+                        <div class="w-10 h-10 rounded-full bg-rose-50 dark:bg-rose-950/50 text-rose-600 dark:text-rose-400 flex items-center justify-center mb-1 text-lg">
+                            <i class="fa-solid fa-bookmark"></i>
+                        </div>
+                        <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300">Saved</span>
+                    </button>
+                </div>
+
+                <!-- Live Announcement -->
+                <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl p-4 flex items-start space-x-3">
+                    <div class="text-amber-600 dark:text-amber-400 text-lg mt-0.5">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-semibold text-xs text-amber-900 dark:text-amber-200 uppercase tracking-wide">Live Announcement</h4>
+                            <span class="text-[10px] text-amber-700 dark:text-amber-400">10m ago</span>
+                        </div>
+                        <p class="text-xs text-amber-800 dark:text-amber-300 mt-1">Registration desk opens on Day 1 at 08:00 AM in Hall A Lobby. Please present your mobile badge.</p>
+                    </div>
+                </div>
+
+                <!-- Up Next Sessions -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Up Next For You</h3>
+                        <button onclick="switchTab('agenda')" class="text-xs text-brand-600 dark:text-brand-500 font-semibold hover:underline">View All</button>
+                    </div>
+                    <div id="dashboardUpcoming" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Essentials Card -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3">
+                    <h3 class="font-bold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Attendee Essentials</h3>
+                    <div class="flex items-center justify-between py-1 border-b border-slate-100 dark:border-slate-800">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-wifi text-brand-600 text-sm w-5"></i>
+                            <span class="text-xs font-medium">Wi-Fi Network</span>
+                        </div>
+                        <span class="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">TechSummit_Guest</span>
+                    </div>
+                    <div class="flex items-center justify-between py-1">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-key text-brand-600 text-sm w-5"></i>
+                            <span class="text-xs font-medium">Password</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-xs font-mono font-bold text-slate-800 dark:text-slate-200">TS2026Connect</span>
+                            <button onclick="copyToClipboard('TS2026Connect', 'Password copied!')" class="text-xs text-brand-600 hover:text-brand-700 p-1">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: AGENDA / SCHEDULE -->
+            <section id="tab-agenda" class="tab-content hidden space-y-3">
+                <div class="flex space-x-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto hide-scrollbar">
+                    <button onclick="filterDay('Day 1')" id="dayBtn-Day 1" class="day-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition bg-brand-600 text-white shadow-sm">Day 1 (Nov 12)</button>
+                    <button onclick="filterDay('Day 2')" id="dayBtn-Day 2" class="day-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400">Day 2 (Nov 13)</button>
+                    <button onclick="filterDay('Day 3')" id="dayBtn-Day 3" class="day-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400">Day 3 (Nov 14)</button>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                        <input type="text" id="agendaSearch" oninput="renderAgenda()" placeholder="Search session, topic, or speaker..." class="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <button onclick="clearSearch()" id="clearSearchBtn" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div class="flex space-x-1.5 overflow-x-auto hide-scrollbar py-0.5">
+                        <button onclick="filterTrack('All')" id="trackBtn-All" class="track-btn text-[11px] px-3 py-1 rounded-full border border-brand-500 bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 font-semibold whitespace-nowrap">All Tracks</button>
+                        <button onclick="filterTrack('Keynote')" id="trackBtn-Keynote" class="track-btn text-[11px] px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">Keynotes</button>
+                        <button onclick="filterTrack('AI & Tech')" id="trackBtn-AI & Tech" class="track-btn text-[11px] px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">AI & Future</button>
+                        <button onclick="filterTrack('DevOps')" id="trackBtn-DevOps" class="track-btn text-[11px] px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">DevOps</button>
+                    </div>
+                </div>
+
+                <div id="agendaList" class="space-y-3 pt-1"></div>
+            </section>
+
+            <!-- TAB 3: VENUE & LOCATION -->
+            <section id="tab-venue" class="tab-content hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="relative h-44 bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                        <div class="absolute inset-0 opacity-40 dark:opacity-20 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
+                        <svg class="absolute inset-0 w-full h-full stroke-brand-500/30 dark:stroke-brand-400/20" stroke-width="3">
+                            <line x1="0" y1="50" x2="400" y2="120" />
+                            <line x1="200" y1="0" x2="200" y2="200" />
+                            <circle cx="200" cy="100" r="30" class="fill-indigo-500/10 stroke-indigo-500" />
+                        </svg>
+                        <div class="relative z-10 text-center animate-bounce">
+                            <div class="w-12 h-12 rounded-full bg-brand-600 text-white flex items-center justify-center shadow-lg text-xl border-2 border-white dark:border-slate-900 mx-auto">
+                                <i class="fa-solid fa-location-dot"></i>
+                            </div>
+                            <span class="inline-block bg-slate-900/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">Grand Palace Convention</span>
+                        </div>
+                    </div>
+
+                    <div class="p-4">
+                        <h3 class="font-bold text-base text-slate-900 dark:text-white">Grand Palace Convention Center</h3>
+                        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">777 Innovation Way, Tech District, Metropolis</p>
+                        <div class="grid grid-cols-2 gap-2 mt-3">
+                            <a href="https://maps.google.com" target="_blank" class="flex items-center justify-center space-x-1.5 py-2 px-3 bg-brand-600 text-white text-xs font-semibold rounded-xl hover:bg-brand-700 transition">
+                                <i class="fa-solid fa-diamond-turn-right"></i>
+                                <span>Get Directions</span>
+                            </a>
+                            <button onclick="copyToClipboard('777 Innovation Way, Tech District, Metropolis', 'Address copied!')" class="flex items-center justify-center space-x-1.5 py-2 px-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-xl hover:bg-slate-200 transition">
+                                <i class="fa-regular fa-copy"></i>
+                                <span>Copy Address</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+                    <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-map text-brand-600"></i>
+                        <span>Floor Plan & Room Guide</span>
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-xs text-slate-900 dark:text-slate-100 block">Grand Ballroom A</span>
+                                <span class="text-[11px] text-slate-500">Keynotes & Plenary Sessions</span>
+                            </div>
+                            <span class="text-xs bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold px-2 py-1 rounded-md">Level 1</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+                            <div>
+                                <span class="font-bold text-xs text-slate-900 dark:text-slate-100 block">Hall B & C</span>
+                                <span class="text-[11px] text-slate-500">Technical Breakouts & Demos</span>
+                            </div>
+                            <span class="text-xs bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold px-2 py-1 rounded-md">Level 2</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 4: HOTEL INFO -->
+            <section id="tab-hotel" class="tab-content hidden space-y-4">
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="relative h-36 bg-slate-300 dark:bg-slate-800">
+                        <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=600&q=80" alt="Grand Palace Hotel" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+                            <div>
+                                <span class="px-2 py-0.5 bg-amber-500 text-slate-900 font-bold text-[10px] uppercase rounded">Official Partner</span>
+                                <h3 class="font-bold text-lg text-white mt-1">Grand Palace Hotel</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 space-y-3">
+                        <div class="grid grid-cols-2 gap-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold block">Check-In</span>
+                                <span class="font-bold text-xs text-slate-800 dark:text-slate-200">03:00 PM</span>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 uppercase font-semibold block">Check-Out</span>
+                                <span class="font-bold text-xs text-slate-800 dark:text-slate-200">12:00 PM</span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 border border-indigo-100 dark:border-indigo-900/50 bg-indigo-50/50 dark:bg-indigo-950/30 rounded-xl flex items-center justify-between">
+                            <div>
+                                <span class="text-[10px] text-brand-600 dark:text-brand-400 uppercase font-bold block">Promo Discount Code</span>
+                                <span class="font-mono font-bold text-sm text-slate-900 dark:text-white">TSUMMIT26</span>
+                            </div>
+                            <button onclick="copyToClipboard('TSUMMIT26', 'Discount promo code copied!')" class="px-3 py-1.5 bg-brand-600 text-white rounded-lg text-xs font-semibold hover:bg-brand-700 transition">
+                                Copy Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 5: SAVED SCHEDULE -->
+            <section id="tab-myschedule" class="tab-content hidden space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-base text-slate-900 dark:text-white">My Saved Agenda</h3>
+                        <p class="text-xs text-slate-500">Your personalized schedule saved locally</p>
+                    </div>
+                    <button onclick="clearSavedSessions()" class="text-xs text-rose-500 hover:text-rose-600 font-semibold flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Clear All
+                    </button>
+                </div>
+                <div id="savedSessionsList" class="space-y-3 pt-1"></div>
+            </section>
+        </main>
+
+        <nav class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 fixed sm:absolute bottom-0 left-0 right-0 z-30 px-2 py-2">
+            <div class="grid grid-cols-5 gap-1">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex flex-col items-center justify-center py-1 text-brand-600 dark:text-brand-400 font-bold">
+                    <i class="fa-solid fa-house text-lg"></i>
+                    <span class="text-[10px] font-semibold mt-0.5">Home</span>
+                </button>
+                <button onclick="switchTab('agenda')" id="nav-agenda" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400">
+                    <i class="fa-solid fa-calendar-days text-lg"></i>
+                    <span class="text-[10px] font-semibold mt-0.5">Agenda</span>
+                </button>
+                <button onclick="switchTab('venue')" id="nav-venue" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400">
+                    <i class="fa-solid fa-map-location-dot text-lg"></i>
+                    <span class="text-[10px] font-semibold mt-0.5">Venue</span>
+                </button>
+                <button onclick="switchTab('hotel')" id="nav-hotel" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400">
+                    <i class="fa-solid fa-hotel text-lg"></i>
+                    <span class="text-[10px] font-semibold mt-0.5">Hotel</span>
+                </button>
+                <button onclick="switchTab('myschedule')" id="nav-myschedule" class="nav-btn flex flex-col items-center justify-center py-1 text-slate-400 relative">
+                    <i class="fa-solid fa-bookmark text-lg"></i>
+                    <span class="text-[10px] font-semibold mt-0.5">Saved</span>
+                    <span id="savedBadge" class="hidden absolute top-1 right-4 w-2 h-2 rounded-full bg-rose-500"></span>
+                </button>
+            </div>
+        </nav>
+
+        <!-- SHARE APP MODAL -->
+        <div id="shareModal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center hidden p-4">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-5 space-y-4 border border-slate-200 dark:border-slate-800 text-center">
+                <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <h3 class="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                        <i class="fa-solid fa-share-nodes text-brand-600"></i> Share Event Companion
+                    </h3>
+                    <button onclick="closeModal('shareModal')" class="text-slate-400 hover:text-slate-600 text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <p class="text-xs text-slate-500">Scan this QR code with a mobile camera or share the direct link to open the event app.</p>
+
+                <!-- Generated QR Container -->
+                <div class="p-3 bg-white rounded-2xl inline-block border border-slate-200 shadow-inner">
+                    <div id="qrcode" class="flex justify-center"></div>
+                </div>
+
+                <!-- Web Share API & Copy Link Inputs -->
+                <div class="space-y-2 pt-1">
+                    <button onclick="triggerNativeShare()" class="w-full py-2.5 bg-brand-600 text-white font-semibold text-xs rounded-xl hover:bg-brand-700 transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                        <span>Send App Link (WhatsApp, Email)</span>
+                    </button>
+
+                    <button onclick="copyAppURL()" class="w-full py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold text-xs rounded-xl hover:bg-slate-200 transition flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy App URL to Clipboard</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Session Detail Modal -->
+        <div id="sessionModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center hidden p-0 sm:p-4">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 max-h-[85vh] overflow-y-auto border border-slate-200 dark:border-slate-800">
+                <div class="flex justify-between items-start">
+                    <span id="modalTrack" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950 text-brand-600 dark:text-brand-400">Track</span>
+                    <button onclick="closeModal('sessionModal')" class="text-slate-400 hover:text-slate-600 text-lg p-1">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-900 dark:text-white leading-snug">Session Title</h3>
+                <div class="flex items-center space-x-3 text-xs text-slate-500">
+                    <span id="modalTime"><i class="fa-regular fa-clock"></i> Time</span>
+                    <span>•</span>
+                    <span id="modalRoom"><i class="fa-solid fa-location-dot"></i> Room</span>
+                </div>
+                <div class="flex items-center space-x-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl">
+                    <div id="modalSpeakerAvatar" class="w-10 h-10 rounded-full bg-brand-500 text-white font-bold flex items-center justify-center text-sm uppercase">SP</div>
+                    <div>
+                        <h4 id="modalSpeakerName" class="font-bold text-xs text-slate-900 dark:text-white">Speaker Name</h4>
+                        <p id="modalSpeakerTitle" class="text-[11px] text-slate-500">Speaker Title</p>
+                    </div>
+                </div>
+                <p id="modalDesc" class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">Description...</p>
+                <button id="modalSaveBtn" class="w-full py-2.5 bg-brand-600 text-white font-semibold text-xs rounded-xl hover:bg-brand-700 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-regular fa-bookmark"></i>
+                    <span>Save Session</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white text-xs px-4 py-2.5 rounded-full shadow-lg border border-slate-700 opacity-0 pointer-events-none transition-all duration-300 flex items-center space-x-2">
+            <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+            <span id="toastMsg">Action completed</span>
+        </div>
+
+    </div>
+
+    <script>
+        const agendaData = [
+            { id: "s1", day: "Day 1", time: "09:00 AM - 10:30 AM", title: "Opening Keynote: Next Decade in Tech & AI", track: "Keynote", location: "Grand Ballroom A", speaker: "Dr. Elena Rostova", speakerTitle: "VP of AI Research", desc: "Explore upcoming breakthroughs in generative AI, quantum computing, and distributed networks." },
+            { id: "s2", day: "Day 1", time: "11:00 AM - 12:00 PM", title: "Building Resilient Cloud Architecture", track: "DevOps", location: "Hall B (Level 2)", speaker: "Marcus Vance", speakerTitle: "Principal Cloud Architect", desc: "Multi-region disaster recovery, low latency serverless computing, and cost optimization." },
+            { id: "s3", day: "Day 1", time: "02:00 PM - 03:30 PM", title: "Autonomous Agents & Workflows", track: "AI & Tech", location: "Hall C (Level 2)", speaker: "Aisha Patel", speakerTitle: "Founder, Agentic Systems", desc: "Practical applications of autonomous multi-agent systems in enterprise automation." },
+            { id: "s4", day: "Day 2", time: "09:30 AM - 10:45 AM", title: "Keynote: Ethical Engineering & Privacy", track: "Keynote", location: "Grand Ballroom A", speaker: "James Holloway", speakerTitle: "Chief Privacy Officer", desc: "Navigating international AI regulations, data governance frameworks, and security." }
+        ];
+
+        let selectedDay = "Day 1";
+        let selectedTrack = "All";
+        let savedSessionIds = JSON.parse(localStorage.getItem('eventPulse_saved') || '[]');
+        let qrcodeInstance = null;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderDashboardUpcoming();
+            renderAgenda();
+            renderSavedSessions();
+            updateSavedBadge();
+            startCountdown();
+        });
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeIcon = document.getElementById('themeIcon');
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                themeIcon.className = "fa-solid fa-moon text-xs";
+            } else {
+                html.classList.add('dark');
+                themeIcon.className = "fa-solid fa-sun text-xs text-amber-400";
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.className = "nav-btn flex flex-col items-center justify-center py-1 text-slate-400";
+            });
+            const activeNav = document.getElementById(`nav-${tabName}`);
+            if (activeNav) activeNav.className = "nav-btn flex flex-col items-center justify-center py-1 text-brand-600 dark:text-brand-400 font-bold";
+            document.getElementById('mainContent').scrollTop = 0;
+        }
+
+        function openShareModal() {
+            const currentURL = window.location.href;
+            openModal('shareModal');
+            
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = ""; 
+            qrcodeInstance = new QRCode(qrContainer, {
+                text: currentURL,
+                width: 140,
+                height: 140,
+                colorDark: "#312e81",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function triggerNativeShare() {
+            if (navigator.share) {
+                navigator.share({
+                    title: "TechSummit 2026 Mobile Companion",
+                    text: "Check out the schedule, venue details, and agenda for TechSummit '26!",
+                    url: window.location.href
+                }).catch(() => {});
+            } else {
+                copyAppURL();
+            }
+        }
+
+        function copyAppURL() {
+            copyToClipboard(window.location.href, "App URL copied to clipboard!");
+        }
+
+        function renderDashboardUpcoming() {
+            const container = document.getElementById('dashboardUpcoming');
+            container.innerHTML = agendaData.slice(0, 2).map(session => `
+                <div onclick="openSessionModal('${session.id}')" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 shadow-sm hover:border-brand-500 transition cursor-pointer flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-md">${session.track}</span>
+                        <h4 class="font-bold text-xs text-slate-900 dark:text-white leading-tight">${session.title}</h4>
+                        <p class="text-[11px] text-slate-500"><i class="fa-regular fa-clock mr-1"></i>${session.time} • ${session.location}</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-400 text-xs pl-2"></i>
+                </div>
+            `).join('');
+        }
+
+        function filterDay(day) {
+            selectedDay = day;
+            document.querySelectorAll('.day-btn').forEach(btn => {
+                btn.className = "day-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition bg-slate-100 dark:bg-slate-900 text-slate-600 dark:text-slate-400";
+            });
+            document.getElementById(`dayBtn-${day}`).className = "day-btn px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition bg-brand-600 text-white shadow-sm";
+            renderAgenda();
+        }
+
+        function filterTrack(track) {
+            selectedTrack = track;
+            document.querySelectorAll('.track-btn').forEach(btn => {
+                btn.className = "track-btn text-[11px] px-3 py-1 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap";
+            });
+            document.getElementById(`trackBtn-${track}`).className = "track-btn text-[11px] px-3 py-1 rounded-full border border-brand-500 bg-brand-50 dark:bg-brand-950/50 text-brand-600 dark:text-brand-400 font-semibold whitespace-nowrap";
+            renderAgenda();
+        }
+
+        function clearSearch() {
+            document.getElementById('agendaSearch').value = '';
+            document.getElementById('clearSearchBtn').classList.add('hidden');
+            renderAgenda();
+        }
+
+        function renderAgenda() {
+            const searchVal = document.getElementById('agendaSearch').value.toLowerCase();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (searchVal.length > 0) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+
+            const filtered = agendaData.filter(item => {
+                const matchesDay = item.day === selectedDay;
+                const matchesTrack = selectedTrack === 'All' || item.track === selectedTrack;
+                const matchesSearch = item.title.toLowerCase().includes(searchVal) || item.speaker.toLowerCase().includes(searchVal);
+                return matchesDay && matchesTrack && matchesSearch;
+            });
+
+            const container = document.getElementById('agendaList');
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs">No matching sessions found.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(session => {
+                const isSaved = savedSessionIds.includes(session.id);
+                return `
+                    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2.5 shadow-sm">
+                        <div class="flex items-start justify-between">
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-brand-600 dark:text-brand-400 px-2.5 py-0.5 bg-indigo-50 dark:bg-indigo-950/60 rounded-md">${session.track}</span>
+                            <button onclick="toggleBookmark(event, '${session.id}')" class="text-slate-400 hover:text-rose-500 text-base p-1">
+                                <i class="${isSaved ? 'fa-solid text-rose-500' : 'fa-regular'} fa-bookmark"></i>
+                            </button>
+                        </div>
+                        <div onclick="openSessionModal('${session.id}')" class="cursor-pointer space-y-1">
+                            <h4 class="font-bold text-sm text-slate-900 dark:text-white leading-snug">${session.title}</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">${session.desc}</p>
+                        </div>
+                        <div class="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500">
+                            <span><i class="fa-regular fa-clock text-brand-600"></i> ${session.time}</span>
+                            <span><i class="fa-solid fa-location-dot"></i> ${session.location}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleBookmark(e, sessionId) {
+            e.stopPropagation();
+            if (savedSessionIds.includes(sessionId)) {
+                savedSessionIds = savedSessionIds.filter(id => id !== sessionId);
+                showToast("Removed from My Schedule", "info");
+            } else {
+                savedSessionIds.push(sessionId);
+                showToast("Saved to My Schedule", "success");
+            }
+            localStorage.setItem('eventPulse_saved', JSON.stringify(savedSessionIds));
+            renderAgenda();
+            renderSavedSessions();
+            updateSavedBadge();
+        }
+
+        function clearSavedSessions() {
+            savedSessionIds = [];
+            localStorage.setItem('eventPulse_saved', JSON.stringify([]));
+            renderAgenda();
+            renderSavedSessions();
+            updateSavedBadge();
+            showToast("Schedule cleared", "info");
+        }
+
+        function updateSavedBadge() {
+            const badge = document.getElementById('savedBadge');
+            if (savedSessionIds.length > 0) badge.classList.remove('hidden');
+            else badge.classList.add('hidden');
+        }
+
+        function renderSavedSessions() {
+            const container = document.getElementById('savedSessionsList');
+            const savedList = agendaData.filter(s => savedSessionIds.includes(s.id));
+
+            if (savedList.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 text-slate-400 text-xs">No saved sessions yet.</div>`;
+                return;
+            }
+
+            container.innerHTML = savedList.map(session => `
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2 relative shadow-sm">
+                    <button onclick="toggleBookmark(event, '${session.id}')" class="absolute top-3 right-3 text-rose-500 text-sm">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
+                    <span class="text-[10px] font-bold uppercase text-brand-600 bg-indigo-50 dark:bg-indigo-950 px-2 py-0.5 rounded">${session.day} • ${session.track}</span>
+                    <h4 onclick="openSessionModal('${session.id}')" class="font-bold text-sm text-slate-900 dark:text-white cursor-pointer pr-6">${session.title}</h4>
+                    <p class="text-xs text-slate-500">${session.time} | ${session.location}</p>
+                </div>
+            `).join('');
+        }
+
+        function openSessionModal(sessionId) {
+            const session = agendaData.find(s => s.id === sessionId);
+            if (!session) return;
+
+            document.getElementById('modalTrack').innerText = session.track;
+            document.getElementById('modalTitle').innerText = session.title;
+            document.getElementById('modalTime').innerText = session.time;
+            document.getElementById('modalRoom').innerText = session.location;
+            document.getElementById('modalSpeakerName').innerText = session.speaker;
+            document.getElementById('modalSpeakerTitle').innerText = session.speakerTitle;
+            document.getElementById('modalDesc').innerText = session.desc;
+
+            const isSaved = savedSessionIds.includes(session.id);
+            const modalSaveBtn = document.getElementById('modalSaveBtn');
+            modalSaveBtn.onclick = (e) => {
+                toggleBookmark(e, session.id);
+                closeModal('sessionModal');
+            };
+            modalSaveBtn.innerHTML = isSaved ? `<span>Remove From Saved</span>` : `<span>Save To Schedule</span>`;
+
+            openModal('sessionModal');
+        }
+
+        function openModal(modalId) { document.getElementById(modalId).classList.remove('hidden'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.add('hidden'); }
+
+        function showToast(message, type = "success") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => toast.classList.add('opacity-0', 'pointer-events-none'), 2200);
+        }
+
+        function copyToClipboard(text, message) {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(message || "Copied to clipboard!");
+        }
+
+        function startCountdown() {
+            let days = 12, hours = 8, mins = 42, secs = 19;
+            setInterval(() => {
+                secs--;
+                if (secs < 0) { secs = 59; mins--; }
+                if (mins < 0) { mins = 59; hours--; }
+                if (hours < 0) { hours = 23; days--; }
+                document.getElementById('cd-days').innerText = String(days).padStart(2, '0');
+                document.getElementById('cd-hours').innerText = String(hours).padStart(2, '0');
+                document.getElementById('cd-mins').innerText = String(mins).padStart(2, '0');
+                document.getElementById('cd-secs').innerText = String(secs).padStart(2, '0');
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
